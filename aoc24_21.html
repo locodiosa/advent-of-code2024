@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script>
+	"use strict";
+
+	function calc() {
+		document.getElementById("result").innerHTML = getResult();
+	}
+
+	function getResult() {
+		const codes = test2.split("\n").map(line => line.split("").map(e => e = isNaN(e) ? e : +e));
+		console.log(codes);
+
+		const numKeypad = [[7, 8, 9], [4, 5, 6], [1, 2, 3], ["gap", 0, "A"]];
+
+		const dirKeypad = [["gap", [-1, 0], "A"],
+						   [[0, -1], [1, 0], [0, 1]]];
+
+		const numbers = {};
+
+		for (let i = 0; i < numKeypad.length; ++i) {
+			for (let j = 0; j < numKeypad[i].length; ++j) {
+				if (numbers[numKeypad[i][j]] == undefined) {
+					numbers[numKeypad[i][j]] = [];
+				}
+
+				numbers[numKeypad[i][j]].push(i, j);
+			}
+		}
+
+		console.log(numbers);
+
+		let robNumCoord = [3, 2];
+		let robDir1Coord = [0, 2];
+
+		let robNum = numKeypad[robNumCoord[0]][robNumCoord[1]];
+		let robDir1 = dirKeypad[robDir1Coord[0]][robDir1Coord[1]];
+
+		console.log(robNum, robDir1);
+
+		const robDir1Sequence = [];
+
+		for (let i = 0; i < codes.length; ++i) {
+			for (let j = 0; j < codes[i].length; ++j) {
+				while (robNum != codes[i][j]) {
+					if (numbers[robNum][0] == numbers[codes[i][j]][0]) {
+						robDir1 = (numbers[robNum][1] < numbers[codes[i][j]][1]) ?
+										[0, 1] : [0, -1]; //">" : "<"
+
+						robDir1Coord = (numbers[robNum][1] < numbers[codes[i][j]][1]) ? [1, 2] : [1, 0];
+
+					} else {
+						robDir1 = (numbers[robNum][0] < numbers[codes[i][j]][0]) ?
+										[1, 0] : [-1, 0]; // "v" : "^"
+
+						robDir1Coord = (numbers[robNum][0] < numbers[codes[i][j]][0]) ? [1, 1] : [0, 1];
+					}
+
+					let y = robNumCoord[0] + robDir1[0];
+					let x = robNumCoord[1] + robDir1[1];
+
+					if (y < 0) {
+						robDir1 = [1, 0];
+						robDir1Coord = [1, 1];
+					} else if (y >= numKeypad.length) {
+						robDir1 = [-1, 0];
+						robDir1Coord = [0, 1];
+					} else if (x < 0) {
+						robDir1 = [0, 1];
+						robDir1Coord = [1, 2];
+					} else if (x >= numKeypad[y].length) {
+						robDir1 = [0, -1];
+					} else if (numKeypad[y][x] == "gap") {
+						robDir1Coord = (robDir1 == [0, -1]) ? [0, 1] : [1, 2];
+						robDir1 = dirKeypad[robDir1Coord[0]][robDir1Coord[1]];
+					}
+
+					robNumCoord[0] += robDir1[0];
+					robNumCoord[1] += robDir1[1];
+					robNum = numKeypad[robNumCoord[0]][robNumCoord[1]];
+
+					robDir1Sequence.push(dirKeypad[robDir1Coord[0]][robDir1Coord[1]].join(","));
+				}
+
+				if (robNum == codes[i][j]) {
+					robDir1 = "A";
+					robDir1Sequence.push(robDir1);
+				}
+			}
+		}
+
+		console.log(robDir1Sequence);
+
+		let part1 = 0;
+
+		let part2 = 0;
+
+		return part1 + ", " + part2;
+	}
+
+/*+---+---+---+
+| 7 | 8 | 9 |
++---+---+---+
+| 4 | 5 | 6 |
++---+---+---+
+| 1 | 2 | 3 |
++---+---+---+
+    | 0 | A |
+    +---+---+
+
+    +---+---+
+    | ^ | A |
++---+---+---+
+| < | v | > |
++---+---+---+*/
+
+const test2 = `029A`;
+
+const test = `029A
+980A
+179A
+456A
+379A`;
+
+const input = `805A
+170A
+129A
+283A
+540A`;
+
+</script>
+</head>
+<body onload="calc()">
+<div id="result"></div>
+</body>
+</html>
+
+
+
