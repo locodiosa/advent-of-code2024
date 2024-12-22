@@ -11,9 +11,9 @@
 
 	function getResult() {
 		const secretNumbers = input.split("\n").map(Number);
-		console.log(secretNumbers);
 
 		let part1 = 0;
+
 		const prices = [];
 		const changes = [];
 
@@ -25,6 +25,7 @@
 
 			for (let t = 0; t < 2000; ++t) {
 				let curPrice = num % 10;
+
 				prices[i].push(curPrice);
 
 				if (t > 0) {
@@ -39,30 +40,27 @@
 			part1 += num;
 		}
 
-		let part2 = 0;
+		const list = {};
 
-		for (let n = 0; n < 3; ++n) {
+		for (let n = 0; n < secretNumbers.length; ++n) {
+			const seen = new Set();
+
 			for (let i = 1; i < changes[n].length - 3; ++i) {
-				let sequence = changes[n].slice(i, i + 4);
-				let bananas = 0;
+				let sequence = changes[n].slice(i, i + 4).join(",");
 
-				for (let j = n; j < prices.length; ++j) {
-					let index = changes[j].join(",").indexOf(sequence.join(","), 1);
+				if (!seen.has(sequence)) {
+					seen.add(sequence);
 
-					if (index > 0) {
-						for (let m = 1; m < index; ++m) {
-							if (changes[j][m] == sequence[0] && changes[j][m + 1] == sequence[1] && changes[j][m + 2] == sequence[2] && changes[j][m + 3] == sequence[3]) {
-
-								bananas += prices[j][m + 3];
-								m = index;
-							}
-						}
+					if (list[sequence] == undefined) {
+						list[sequence] = 0;
 					}
-				}
 
-				part2 = Math.max(bananas, part2);
+					list[sequence] += prices[n][i + 3];
+				}
 			}
 		}
+
+		let part2 = Math.max(...Object.values(list));
 
 		return part1 + ", " + part2;
 	}
@@ -74,8 +72,6 @@
 
 		return num3;
 	}
-
-	//1597 too low
 
 const test = `1
 2
