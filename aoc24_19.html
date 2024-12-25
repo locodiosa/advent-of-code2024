@@ -9,62 +9,50 @@
 		document.getElementById("result").innerHTML = getResult();
 	}
 
+	const memo = {};
+
 	function getResult() {
 		const data = input.split("\n\n");
 
-		const patterns = data[0].split(", ").sort((a, b) => b.length - a.length);
-		const designs = data[1].split("\n");
-
-		console.log(patterns);
-		console.log(designs);
+		const patterns = data[0].split(", ");
+		const allDesigns = data[1].split("\n");
 
 		let part1 = 0;
-
-		designs.forEach(design => {
-			let possible = true;
-
-			for (let i = 0; i < design.length;) {
-				const letter = design[i];
-				let matchPattern = null;
-
-				for (let j = 0; j < patterns.length; ++j) {
-					if (patterns[j][0] == letter) {
-						let match = true;
-
-						if (patterns[j].length > 1) {
-							for (let m = 1; m < patterns[j].length; ++m) {
-								if (design[i + m] != patterns[j][m]) {
-									match = false;
-								}
-							}
-						}
-
-						if (match) {
-							matchPattern = patterns[j];
-							i += patterns[j].length;
-							j = patterns.length;
-						}
-					}
-				}
-
-				if (matchPattern == null) {
-					i = design.length;
-					possible = false;
-				}
-			}
-
-			if (possible) {
-				++part1;
-			}
-		});
-
-		
 		let part2 = 0;
+
+		for (let i = 0; i < allDesigns.length; ++i) {
+			const available = getAvailable(allDesigns[i], patterns);
+
+			if (available > 0) {
+				++part1;
+				part2 += available;
+			}
+		}
 
 		return part1 + ", " + part2;
 	}
 
-	//211 too low
+	function getAvailable(design, patterns) {
+		if (memo[design] != undefined) {
+			return memo[design];
+		}
+
+		if (design.length == 0) {
+			return 1;
+		}
+
+		let n = 0;
+
+		for (let i = 0; i < patterns.length; ++i) {
+			if (design.startsWith(patterns[i])) {
+				n += getAvailable(design.slice(patterns[i].length), patterns);
+			}
+		}
+
+		memo[design] = n;
+
+		return n;
+	}
 
 const test = `r, wr, b, g, bwu, rb, gb, br
 
