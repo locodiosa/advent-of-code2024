@@ -9,58 +9,57 @@
 		document.getElementById("result").innerHTML = getResult();
 	}
 
+	const cache = {};
+
 	function getResult() {
 		const codes = input.split("\n");
 
 		const numKeypad = [[7, 8, 9], [4, 5, 6], [1, 2, 3], ["gap", 0, "A"]];
-
-		const dirKeypad = [["gap", "^", "A"],
-						   ["<", "v", ">"]];
+		const dirKeypad = [["gap", "^", "A"], ["<", "v", ">"]];
 
 		const pairs = Object.assign(getPairs(numKeypad), getPairs(dirKeypad));
-		console.log(pairs);
 
 		let part1 = 0;
+		let part2 = 0;
 
 		for (let i = 0; i < codes.length; ++i) {
-			let seq = getSeq(codes[i], pairs);
-
-			seq = seq.map(s => getSeq(s, pairs)).flat();
-			seq = seq.map(s => getSeq(s, pairs)).flat();
-
-			part1 += (Math.min(...seq.map(e => e.length)) * codes[i].match(/\d+/gm).map(Number)[0]);
+			part1 += (getLength(codes[i], 3, pairs) * codes[i].match(/\d+/gm).map(Number)[0]);
+			part2 += (getLength(codes[i], 26, pairs) * codes[i].match(/\d+/gm).map(Number)[0]);
 		}
-
-		let part2 = 0;
 
 		return part1 + ", " + part2;
 	}
 
-	function getSeq(code, pairs) {
-		let seq = [[]];
-		let cur = "A";
-
-		for (let j = 0; j < code.length; ++j) {
-			const key = [cur, code[j]].join("");
-
-			if (pairs[key].length == 1) {
-				seq.forEach(e => e.push(...pairs[key]));
-			} else {
-				const queue = [];
-
-				pairs[key].forEach(s => {
-					const curSeq = [...seq.map(e => [...e])];
-					curSeq.forEach(e => e.push(s));
-					queue.push(...curSeq);
-				});
-
-				seq = [...queue];
-			}
-
-			cur = code[j];
+	function getLength(code, level, pairs) {
+		if (level == 0) {
+			return code.length;
 		}
 
-		return seq.map(e => e = e.join(""));
+		const key = [code, level].join(",");
+
+		if (cache[key] != undefined) {
+			return cache[key];
+		}
+
+		let sumLength = 0;
+
+		for (let i = 0; i < code.length; ++i) {
+			const newCode = (i == 0) ? ["A", code[i]].join("") :
+				[code[i - 1], code[i]].join("");
+
+			const keys = pairs[newCode];
+			let minLength = Infinity;
+
+			for (let j = 0; j < keys.length; ++j) {
+				minLength = Math.min(minLength, getLength(keys[j], level - 1, pairs));
+			}
+
+			sumLength += minLength;
+		}
+
+		cache[key] = sumLength;
+
+		return sumLength;
 	}
 
 	function getPairs(keypad) {
